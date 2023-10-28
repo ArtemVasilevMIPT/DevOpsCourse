@@ -1,0 +1,387 @@
+openapi: 3.0.3
+info:
+  title: Full-Stack project API
+  description: "This is a Tabletop Website Server based on my Fullstack course [project](https://github.com/ArtemVasilevMIPT/FullstackProject/tree/master)"
+  version: 0.0.1
+servers:
+- url: http://awesometabletop.ru/api
+tags:
+- name: game
+  description: Everything about games
+- name: user
+  description: Operations about user
+- name: JWT
+  description: Create and refresh JWT
+paths:
+  /token/access:
+    post:
+      tags:
+      - JWT
+      summary: Refresh token
+      description: Takes a refresh type JSON web token and returns an access type
+        JSON web token if the refresh token is valid.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/token_access_body'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+  /user/create:
+    post:
+      tags:
+      - user
+      summary: Creates new user
+      description: Creates new user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/user_create_body'
+      responses:
+        "201":
+          description: created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+  /user/auth:
+    post:
+      tags:
+      - user
+      summary: Authenticate user
+      description: Authenticate user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/user_auth_body'
+      responses:
+        "200":
+          description: authorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_1'
+        "403":
+          description: Can not authenticate with the given credentials or the account
+            has been deactivated
+  /user/update:
+    get:
+      tags:
+      - user
+      summary: Get current user
+      description: Get current user
+      responses:
+        "200":
+          description: request successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+      security:
+      - jwtAuth: []
+    post:
+      tags:
+      - user
+      summary: Update user info
+      description: Update user info
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/user_update_body'
+      responses:
+        "200":
+          description: request successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user_update_body'
+        "403":
+          description: Can not authenticate with the given credentials or the account
+            has been deactivated
+      security:
+      - jwtAuth: []
+  /user/get/{userId}:
+    get:
+      tags:
+      - user
+      summary: Get user info by id
+      description: Get user info by id
+      parameters:
+      - name: userId
+        in: path
+        description: User ID
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: request successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        "403":
+          description: Can not authenticate with the given credentials or the account
+            has been deactivated
+      security:
+      - jwtAuth: []
+  /games/create:
+    post:
+      tags:
+      - game
+      summary: Create a new game
+      description: Create a new game with current user as GM
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/game'
+      responses:
+        "201":
+          description: created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/game'
+        "403":
+          description: Can not authenticate with the given credentials or the account
+            has been deactivated
+      security:
+      - jwtAuth: []
+  /games/getByUser/{userId}:
+    get:
+      tags:
+      - game
+      summary: Get games for user
+      description: Get the list of all games for current user
+      parameters:
+      - name: userId
+        in: path
+        description: User ID
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: request successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_2'
+        "403":
+          description: Can not authenticate with the given credentials or the account
+            has been deactivated
+      security:
+      - jwtAuth: []
+  /games/get/{gameId}:
+    get:
+      tags:
+      - game
+      summary: Get game by its ID
+      description: Get game by its ID in the database
+      parameters:
+      - name: gameId
+        in: path
+        description: Game ID
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: request successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/game'
+        "403":
+          description: Can not authenticate with the given credentials or the account
+            has been deactivated
+      security:
+      - jwtAuth: []
+components:
+  schemas:
+    game:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        date_created:
+          type: string
+          format: date-time
+        desciption:
+          type: string
+        state:
+          type: string
+        players:
+          type: array
+          items:
+            type: integer
+            format: int64
+        image:
+          type: string
+          format: binary
+        gm:
+          type: integer
+          format: int64
+      example:
+        desciption: desciption
+        image: ""
+        date_created: 2000-01-23T04:56:07.000+00:00
+        players:
+        - 6
+        - 6
+        gm: 1
+        name: name
+        id: 0
+        state: state
+    user:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        nickname:
+          type: string
+        email:
+          type: string
+          format: email
+        date_joined:
+          type: string
+          format: date-time
+        password:
+          type: string
+          format: password
+        profile_pic:
+          type: string
+          format: binary
+      example:
+        password: ""
+        nickname: nickname
+        profile_pic: ""
+        id: 0
+        date_joined: 2000-01-23T04:56:07.000+00:00
+        email: ""
+    token_access_body:
+      type: object
+      properties:
+        refresh:
+          type: string
+    inline_response_200:
+      type: object
+      properties:
+        access:
+          type: string
+      example:
+        access: access
+    user_create_body:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        nickname:
+          type: string
+    user_auth_body:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    inline_response_200_1:
+      type: object
+      properties:
+        nickname:
+          type: string
+        token:
+          $ref: '#/components/schemas/inline_response_200_1_token'
+      example:
+        nickname: nickname
+        token:
+          access: access
+          refresh: refresh
+    user_update_body:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/user'
+      example:
+        user:
+          password: ""
+          nickname: nickname
+          profile_pic: ""
+          id: 0
+          date_joined: 2000-01-23T04:56:07.000+00:00
+          email: ""
+    inline_response_200_2:
+      type: object
+      properties:
+        game_list:
+          type: array
+          items:
+            $ref: '#/components/schemas/game'
+      example:
+        game_list:
+        - desciption: desciption
+          image: ""
+          date_created: 2000-01-23T04:56:07.000+00:00
+          players:
+          - 6
+          - 6
+          gm: 1
+          name: name
+          id: 0
+          state: state
+        - desciption: desciption
+          image: ""
+          date_created: 2000-01-23T04:56:07.000+00:00
+          players:
+          - 6
+          - 6
+          gm: 1
+          name: name
+          id: 0
+          state: state
+    inline_response_200_1_token:
+      type: object
+      properties:
+        refresh:
+          type: string
+        access:
+          type: string
+      example:
+        access: access
+        refresh: refresh
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
