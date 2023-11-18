@@ -9,7 +9,10 @@
 package swagger
 
 import (
+	"encoding/json"
+	"log"
 	"net/http"
+	"time"
 )
 
 func UserAuthPost(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +27,27 @@ func UserCreatePost(w http.ResponseWriter, r *http.Request) {
 
 func UserGetUserIdGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	var body UserCreateBody
+	err := decoder.Decode(&body)
+	if err != nil {
+		log.Fatal(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
+	user := User{
+		Email:      body.Email,
+		Password:   body.Password,
+		Nickname:   body.Nickname,
+		Id:         0,
+		DateJoined: time.Now(),
+	}
+	jsonResp, _ := json.Marshal(user)
+	w.Write(jsonResp)
 }
 
 func UserUpdateGet(w http.ResponseWriter, r *http.Request) {
