@@ -22,18 +22,13 @@ func UserAuthPost(w http.ResponseWriter, r *http.Request) {
 
 func UserCreatePost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-}
-
-func UserGetUserIdGet(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 	var body UserCreateBody
 	err := decoder.Decode(&body)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -48,6 +43,11 @@ func UserGetUserIdGet(w http.ResponseWriter, r *http.Request) {
 	}
 	jsonResp, _ := json.Marshal(user)
 	w.Write(jsonResp)
+}
+
+func UserGetUserIdGet(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 }
 
 func UserUpdateGet(w http.ResponseWriter, r *http.Request) {
