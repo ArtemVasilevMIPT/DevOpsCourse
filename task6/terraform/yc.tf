@@ -6,10 +6,41 @@ terraform {
   }
 }
 
+variable "yc_token" {
+  type = string
+}
+
+variable "cloud_id" {
+  type = string
+}
+
+variable "folder_id" {
+  type = string
+}
+
+variable "ssh_key_path" {
+  type = string
+}
+
+variable "n_cores" {
+  type    = number
+  default = 2
+}
+
+variable "ram_size" {
+  type    = number
+  default = 1
+}
+
+variable "storage_size" {
+  type    = number
+  default = 10
+}
+
 provider "yandex" {
-  token     = "y0_AgAEA7qkNgaoAATuwQAAAAD0-3d5uvKUhijgQ1uTT6Lm9mxUu_ZRbeo"
-  cloud_id  = "b1gptt6ck9gmebgbgkda"
-  folder_id = "b1g44ftedn20okjf9fp6"
+  token     = var.yc_token
+  cloud_id  = var.cloud_id
+  folder_id = var.folder_id
   zone      = "ru-central1-b"
 }
 
@@ -18,7 +49,7 @@ resource "yandex_iam_service_account" "sa" {
 }
 
 resource "yandex_resourcemanager_folder_iam_member" "sa-editor" {
-  folder_id = "b1g44ftedn20okjf9fp6"
+  folder_id = var.folder_id
   role      = "storage.editor"
   member    = "serviceAccount:${yandex_iam_service_account.sa.id}"
 }
@@ -36,8 +67,8 @@ resource "yandex_compute_instance" "vm-1" {
   name = "webapp-1"
 
   resources {
-    cores  = 2
-    memory = 1
+    cores  = var.n_cores
+    memory = var.ram_size
   }
 
   boot_disk {
@@ -52,7 +83,7 @@ resource "yandex_compute_instance" "vm-1" {
   }
 
   metadata = {
-    ssh-keys = "ubuntu:${file("/home/marcille/.ssh/yc_key.pub")}"
+    ssh-keys = "ubuntu:${file(var.ssh_key_path)}"
   }
 }
 
@@ -60,8 +91,8 @@ resource "yandex_compute_instance" "vm-2" {
   name = "webapp-2"
 
   resources {
-    cores  = 2
-    memory = 1
+    cores  = var.n_cores
+    memory = var.ram_size
   }
 
   boot_disk {
@@ -76,7 +107,7 @@ resource "yandex_compute_instance" "vm-2" {
   }
 
   metadata = {
-    ssh-keys = "ubuntu:${file("/home/marcille/.ssh/yc_key.pub")}"
+    ssh-keys = "ubuntu:${file(var.ssh_key_path)}"
   }
 }
 
@@ -95,7 +126,7 @@ resource "yandex_mdb_mysql_cluster" "storage" {
   resources {
     resource_preset_id = "s2.micro"
     disk_type_id       = "network-ssd"
-    disk_size          = 10
+    disk_size          = var.storage_size
   }
 
   host {
